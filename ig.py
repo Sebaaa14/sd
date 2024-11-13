@@ -219,6 +219,7 @@ def correrCodigo():
     config = etl.config()
     datos = etl.correrETL()
     calcular_ganancia_informacion(datos, config)
+    print("IG ejecutado correctamente")
 
 if __name__ == '__main__':
     correrCodigo()

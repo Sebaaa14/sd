@@ -44,14 +44,14 @@ def definicion(df):
   #HAY QUE AGREGAR UN INDICE A CADA FILA ANTES DE DIVIDIRLOS
 
 
-  print(f"filas y columnas en dfKDD: ({dfKDD.shape[0]}, {dfKDD.shape[1]})")
+  #print(f"filas y columnas en dfKDD: ({dfKDD.shape[0]}, {dfKDD.shape[1]})")
 
   #elimina la ultima columna
   dfKDD = dfKDD.drop(dfKDD.columns[-1], axis=1)
 
 
 
-  print(f"filas y columnas en dfKDD dsps de quitar la 1ra: ({dfKDD.shape[0]}, {dfKDD.shape[1]})")
+  #print(f"filas y columnas en dfKDD dsps de quitar la 1ra: ({dfKDD.shape[0]}, {dfKDD.shape[1]})")
 
   #--------------------------------------------------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ def definicion(df):
   dfKDD.iloc[:, -1] = dfKDD.iloc[:, -1].apply(clasificar_attack)
 
 
-  print(dfKDD)
+  #print(dfKDD)
 
   return dfKDD
 
@@ -112,9 +112,9 @@ def separacion(dfKDD):
     class1_df = pd.read_csv('archivos_nuevos/class1.csv', header=None)
     class2_df = pd.read_csv('archivos_nuevos/class2.csv', header=None)
     class3_df = pd.read_csv('archivos_nuevos/class3.csv', header=None)
-    print(f"filas y columnas en class1.csv: ({class1_df.shape[0]}, {class1_df.shape[1]})")
-    print(f"filas y columnas en class2.csv: ({class2_df.shape[0]}, {class2_df.shape[1]})")
-    print(f"filas y columnas en class3.csv: ({class3_df.shape[0]}, {class3_df.shape[1]})")
+    #print(f"filas y columnas en class1.csv: ({class1_df.shape[0]}, {class1_df.shape[1]})")
+    #print(f"filas y columnas en class2.csv: ({class2_df.shape[0]}, {class2_df.shape[1]})")
+    #print(f"filas y columnas en class3.csv: ({class3_df.shape[0]}, {class3_df.shape[1]})")
 
     return class1_df, class2_df, class3_df
 
@@ -152,7 +152,7 @@ def seleccionMuestra2(class1_df, class2_df, class3_df, idx1, idx2, idx3):
     # Unir los tres archivos idx en uno solo
     idx_nuevo = idx1 + idx2 + idx3
     idx_unicos = list(set(idx_nuevo))
-    print(f"Total de índices únicos en idx_nuevo: {len(idx_unicos)}")
+    #print(f"Total de índices únicos en idx_nuevo: {len(idx_unicos)}")
     
     # Crear columna de clase en cada DataFrame de clase
     class1_df[len(class1_df.columns)] = 1
@@ -162,8 +162,8 @@ def seleccionMuestra2(class1_df, class2_df, class3_df, idx1, idx2, idx3):
     # Concatenar los DataFrames de clases en uno solo
     class_nuevo = pd.concat([class1_df, class2_df, class3_df], ignore_index=True)
     max_filas_class_nuevo = class_nuevo.shape[0]
-    print(f"Total de filas esperado: {class1_df.shape[0] + class2_df.shape[0] + class3_df.shape[0]}")
-    print(f"Total de filas en class_nuevo después de concatenar: {class_nuevo.shape[0]}")
+    #print(f"Total de filas esperado: {class1_df.shape[0] + class2_df.shape[0] + class3_df.shape[0]}")
+    #print(f"Total de filas en class_nuevo después de concatenar: {class_nuevo.shape[0]}")
 
     # Filtrar índices válidos y fuera de rango
     valid_idx_nuevo = [idx for idx in idx_unicos if idx < max_filas_class_nuevo]
@@ -204,6 +204,7 @@ def correrETL():
 
 def main():
     correrETL()       
+    print("ETL ejecutado correctamente")
    
 #----------------------------------------------------------------------------------------------------------------
       
