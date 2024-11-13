@@ -1,26 +1,41 @@
-#-------------------------------------------------------
-# Load Data from File: KDDTrain.txt
-#--------------------------------------------------------
 
 import pandas as pd
 import numpy as num
-#import utility_etl  as ut
 
-# Load parameters from config.csv
+
+#LECTURA PARAMETROS
 def config(): 
     config = pd.read_csv("config/config.csv", header=None)
     return config
+
+#----------------------------------------------------------------------------------------------------------------
 
 def lectura():
   df = pd.read_csv("data/KDDTrain.txt", sep=",", header=None)
   return df
 
-def preprocess_data(df):
-    # Convertir las columnas 2, 3 y 4 (índices 1, 2 y 3) a enteros
-    df.iloc[:, 1] = pd.to_numeric(df.iloc[:, 1], errors='coerce').fillna(0).astype(int)  # Columna 2
-    df.iloc[:, 2] = pd.to_numeric(df.iloc[:, 2], errors='coerce').fillna(0).astype(int)  # Columna 3
-    df.iloc[:, 3] = pd.to_numeric(df.iloc[:, 3], errors='coerce').fillna(0).astype(int)  # Columna 4
+
+#----------------------------------------------------------------------------------------------------------------
+
+
+
+def preprocess_data(df): 
+    # Mapeo de protocolos, servicios y flags dentro de la función
+    protocol = {'tcp': 1, 'udp': 2, 'icmp': 3}
+    servicio = {servicio: idx+1 for idx, servicio in enumerate(df.iloc[:, 2].unique())}
+    linea_3 = {flag: idx+1 for idx, flag in enumerate(df.iloc[:, 3].unique())}
+
+    # Asignar valores numéricos a las columnas correspondientes usando .map()
+    df.iloc[:, 1] = df.iloc[:, 1].map(protocol)  # Columna 1 (Protocolo)
+    df.iloc[:, 2] = df.iloc[:, 2].map(servicio)   # Columna 2 (Servicio)
+    df.iloc[:, 3] = df.iloc[:, 3].map(linea_3)       # Columna 3 (Flag)
+    
     return df
+
+
+
+
+#----------------------------------------------------------------------------------------------------------------
 
 #Creamos una copia para no tener que correr el df read siempre (esto porque si no se corre el df cada vez, se bugea, con la copia no)
 
@@ -69,6 +84,11 @@ def definicion(df):
 
   return dfKDD
 
+
+#----------------------------------------------------------------------------------------------------------------
+
+
+
 #Primero separamos las clases según el tipo de ataque
 def separacion(dfKDD):
     class1 = dfKDD[dfKDD.iloc[:, -1] == 1]
@@ -98,6 +118,10 @@ def separacion(dfKDD):
 
     return class1_df, class2_df, class3_df
 
+
+
+#----------------------------------------------------------------------------------------------------------------
+
 # Cargar los archivos de índices
 def lectura_idx():
     idx1 = pd.read_csv('data/idx_class1.csv', header=None)[0].tolist()
@@ -110,18 +134,22 @@ def lectura_idx():
     idx2 = [idx for idx in idx2 if idx < max_idx]
     idx3 = [idx for idx in idx3 if idx < max_idx]
 
-    print("largo idx1", len(idx1))
-    print("largo idx2", len(idx2))
-    print("largo idx3", len(idx3))
+   # print("largo idx1", len(idx1))
+   # print("largo idx2", len(idx2))
+   # print("largo idx3", len(idx3))
 
     return idx1, idx2, idx3
 
-# Ejemplo de uso con tus archivos de clase e índice
-# seleccionMuestra(class1_df, class2_df, class3_df, idx1, idx2, idx3)
+
+
 
 #----------------------------------------------------------------------------------------------------------------
+
+
 def seleccionMuestra2(class1_df, class2_df, class3_df, idx1, idx2, idx3):
-    # Unir los tres archivos idx en uno solo (idx_nuevo)
+
+
+    # Unir los tres archivos idx en uno solo
     idx_nuevo = idx1 + idx2 + idx3
     idx_unicos = list(set(idx_nuevo))
     print(f"Total de índices únicos en idx_nuevo: {len(idx_unicos)}")
@@ -147,117 +175,37 @@ def seleccionMuestra2(class1_df, class2_df, class3_df, idx1, idx2, idx3):
         'idx_class2': [idx for idx in idx2 if idx in out_of_range_idx],
         'idx_class3': [idx for idx in idx3 if idx in out_of_range_idx],
     }
-    print("Índices fuera de rango en idx_nuevo:", out_of_range_idx)
-    print("Fuente de índices fuera de rango:", out_of_range_sources)
-    print(f"Total de índices válidos en idx_nuevo: {len(valid_idx_nuevo)}")
+    #print("Índices fuera de rango en idx_nuevo:", out_of_range_idx)
+    #print("Fuente de índices fuera de rango:", out_of_range_sources)
+    #print(f"Total de índices válidos en idx_nuevo: {len(valid_idx_nuevo)}")
 
     # Seleccionar las filas correspondientes de class_nuevo usando los índices válidos
     selected_rows_class_nuevo = class_nuevo.iloc[valid_idx_nuevo]
-    print(f"Filas seleccionadas de class_nuevo: ({selected_rows_class_nuevo.shape[0]}, {selected_rows_class_nuevo.shape[1]})")
+    #print(f"Filas seleccionadas de class_nuevo: ({selected_rows_class_nuevo.shape[0]}, {selected_rows_class_nuevo.shape[1]})")
 
     # Guardar el archivo final
     selected_rows_class_nuevo.to_csv('archivos_nuevos/dataClass.csv', index=False, header=False)
     return selected_rows_class_nuevo
 
 
-
 #--------------------------------------------------------------------------------------------------------
-
-
-def seleccionMuestra(class1_df, class2_df, class3_df, idx1, idx2, idx3):
-
-     # Verificar la cantidad de filas en class1 y los índices (LAMENTABLEMENTE EL IDX TIENE NUMEROS DE INDICES QUE NO EXISTEN, ASI QUE HAY QUE REVISAR)
-     print(f"Total de filas en class1: {class1_df.shape[0]}")
-     print(f"Total de índices en idx_class1: {len(idx1)}")
-
-     # Asegúrate de que los índices sean válidos (es decir, estén dentro del rango de filas de class1_df)
-     valid_idx_class1 = [idx for idx in idx1 if idx < len(class1_df)]
-
-     #ESTA GUARDANDO BIEN LAS QUE GUARDA SOLO QUE TOMA 1 DE MAS EJEMPLO: LA 7907 EN REALIDAD ES LA 7908
-     # Seleccionar las filas correspondientes en class1 usando los índices válidos
-     selected_rows_class1 = class1_df.iloc[valid_idx_class1]
-
-     # Guardar las filas seleccionadas en un nuevo archivo CSV sin los índices
-     selected_rows_class1.to_csv('archivos_nuevos/class1_selected.csv', index=False, header=False)
-
-     print(selected_rows_class1)
-
-     # Verificar el archivo resultante (GUARDA MENOS Q HAY INDICES INEXISTENTES)
-     print(f"Filas y columnas en class1_selected.csv: ({selected_rows_class1.shape[0]}, {selected_rows_class1.shape[1]})")
-
-     #--------------------------------------------------------------------------------------------------------------------
-
-     print(f"Total de filas en class2: {class2_df.shape[0]}")
-     print(f"Total de índices en idx_class2: {len(idx2)}")
-
-     valid_idx_class2 = [idx for idx in idx2 if idx < len(class2_df)]
-
-     selected_rows_class2 = class2_df.iloc[valid_idx_class2]
-
-     selected_rows_class2.to_csv('archivos_nuevos/class2_selected.csv', index=False, header=False)
-
-     print(selected_rows_class2)
-
-     print(f"Filas y columnas en class2_selected.csv: ({selected_rows_class2.shape[0]}, {selected_rows_class2.shape[1]})")
-
-
-     #--------------------------------------------------------------------------------------------------------------------
-
-     print(f"Total de filas en class3: {class3_df.shape[0]}")
-     print(f"Total de índices en idx_class3: {len(idx3)}")
-
-     valid_idx_class3 = [idx for idx in idx3 if idx < len(class3_df)]
-
-     selected_rows_class3 = class3_df.iloc[valid_idx_class3]
-
-     selected_rows_class3.to_csv('archivos_nuevos/class3_selected.csv', index=False, header=False)
-
-     print(selected_rows_class3)
-
-     print(f"Filas y columnas en class3_selected.csv: ({selected_rows_class3.shape[0]}, {selected_rows_class3.shape[1]})")
-
-
-
-     #--------------------------------------------------------------------------------------------------------------------
-
-
-     selected_rows_class1 = pd.read_csv('archivos_nuevos/class1_selected.csv', header=None)
-     selected_rows_class2 = pd.read_csv('archivos_nuevos/class2_selected.csv', header=None)
-     selected_rows_class3 = pd.read_csv('archivos_nuevos/class3_selected.csv', header=None)
-
-     # Añadir la columna con el número de clase
-     selected_rows_class1[selected_rows_class1.shape[1]] = 1  # Clase 1: Normal
-     selected_rows_class2[selected_rows_class2.shape[1]] = 2  # Clase 2: DOS
-     selected_rows_class3[selected_rows_class3.shape[1]] = 3  # Clase 3: Probe
-
-     #print("selección1",selected_rows_class1)
-
-     # Unir las tres muestras seleccionadas en un solo DataFrame
-     dataClass = pd.concat([selected_rows_class1, selected_rows_class2, selected_rows_class3], ignore_index=True)
-
-     #print("data class", dataClass)
-
-     #desordenar los datos
-     #dataClass = dataClass.sample(frac=1).reset_index(drop=True)
-     #print("data class desordenado", dataClass)
-
-     dataClass.to_csv('archivos_nuevos/dataClass.csv', index=False, header=False)
-
-     print(f"Filas y columnas en DataClass.csv: ({dataClass.shape[0]}, {dataClass.shape[1]})")
 
 
 def correrETL():
     df = lectura()
     df = preprocess_data(df)
     dfKDD = definicion(df)
-    print("DFKDD LUEGP DE DEFINICION",len(dfKDD))
+    #print("DFKDD LUEGP DE DEFINICION",len(dfKDD))
     class1_df, class2_df, class3_df = separacion(dfKDD)
     idx1, idx2, idx3 = lectura_idx()
     return seleccionMuestra2(class1_df, class2_df, class3_df, idx1, idx2, idx3)
 
+#----------------------------------------------------------------------------------------------------------------
+
 def main():
     correrETL()       
    
+#----------------------------------------------------------------------------------------------------------------
       
 if __name__ == '__main__':   
 	 main()
